@@ -32,6 +32,8 @@ from src.util import openpose as op_util
 import src.config
 from src.RunModel import RunModel
 
+from mpl_toolkits.mplot3d import Axes3D
+
 flags.DEFINE_string('t_img_path', 'data/im1963.jpg', 'Image to run')
 flags.DEFINE_string('q_img_path', 'data/im1963.jpg', 'Image to run')
 flags.DEFINE_string(
@@ -133,6 +135,10 @@ def main(t_img_path, q_img_path, json_path=None):
         input_q_img, get_theta=True)
 
     print("Joints shape :" + str(t_joints3d.shape))
+    print("Joints shape 3d:" + str(t_joints3d.shape))
+    print("Joints shape 0 :" + str(t_joints3d.shape[0]))
+    print("Joints shape 1 :" + str(t_joints3d.shape[1]))
+    print("Joints shape 2 :" + str(t_joints3d.shape[2]))
     visualize_3d(q_img, proc_param, q_joints[0], q_verts[0], q_cams[0], q_joints3d)
     #visualize(t_img, proc_param, t_joints[0], t_verts[0], t_cams[0])
 
@@ -147,11 +153,12 @@ def visualize_3d(img, proc_param, joints, verts, cam, joints3d):
         proc_param, verts, cam, joints, img_size=img.shape[:2])
 
     # Render results
-    plt.figure(1)
-    plt.clf()
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
 
-    #plt = vis_util.draw_skeleton_3d(joints3d, plt)
-    plt = vis_util.draw_skeleton_3d(img, joints_orig, plt)
+    print("Joints shape 3d:" + str(joints3d.shape))
+    ax = vis_util.draw_skeleton_3d(joints3d, ax)
+    #plt = vis_util.draw_skeleton_3d(img, joints_orig, plt)
 
     # plt.ion()
     plt.title('diff vp')
