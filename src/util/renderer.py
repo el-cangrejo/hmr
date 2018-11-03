@@ -451,3 +451,8 @@ def draw_text(input_image, content):
     if input_is_float:
         image = image.astype(np.float32) / 255.
     return image
+
+def draw_skeleton_3d(img, joints_orig, plt):
+    skel_img = draw_skeleton(img, joints_orig)
+    plt.imshow(skel_img)
+    return plt
