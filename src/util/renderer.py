@@ -452,7 +452,8 @@ def draw_text(input_image, content):
         image = image.astype(np.float32) / 255.
     return image
 
-def draw_skeleton_3d(joints, plt):
+def draw_skeleton_3d(joints, plt, draw_edges = True):
+
     if joints.shape[1] == 19:
         # parent indices -1 means no parents
         parents = np.array([
@@ -512,4 +513,36 @@ def draw_skeleton_3d(joints, plt):
         import ipdb
         ipdb.set_trace()
 
+    for child in xrange(len(parents)):
+        point = joints[:, child]
+        print ("Point shape :" + str(point.shape))
+        # If invisible skip
+        #if vis is not None and vis[child] == 0:
+        #    continue
+
+        #if draw_edges:
+        #    cv2.circle(image, (point[0], point[1]), radius, colors['white'],
+        #               -1)
+        #    cv2.circle(image, (point[0], point[1]), radius - 1,
+        #               colors[jcolors[child]], -1)
+        #else:
+        #    # cv2.circle(image, (point[0], point[1]), 5, colors['white'], 1)
+        #    cv2.circle(image, (point[0], point[1]), radius - 1,
+        #               colors[jcolors[child]], 1)
+        #    # cv2.circle(image, (point[0], point[1]), 5, colors['gray'], -1)
+        pa_id = parents[child]
+        if draw_edges and pa_id >= 0:
+            #if vis is not None and vis[pa_id] == 0:
+            #    continue
+            point_pa = joints[:, pa_id]
+            #cv2.circle(image, (point_pa[0], point_pa[1]), radius - 1,
+            #           colors[jcolors[pa_id]], -1)
+            if child not in ecolors.keys():
+                print('bad')
+                import ipdb
+                ipdb.set_trace()
+            #cv2.line(image, (point[0], point[1]), (point_pa[0], point_pa[1]),
+            #         colors[ecolors[child]], radius - 2)
+            plt.plot([point[0][0], point_pa[0][0]], [point[0][1], point_pa[0][1]],
+                    zs=[point[0][2], point_pa[0][2]])
     return plt
