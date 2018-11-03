@@ -452,7 +452,64 @@ def draw_text(input_image, content):
         image = image.astype(np.float32) / 255.
     return image
 
-def draw_skeleton_3d(img, joints_orig, plt):
-    skel_img = draw_skeleton(img, joints_orig)
-    plt.imshow(skel_img)
+def draw_skeleton_3d(joints, plt):
+    if joints.shape[1] == 19:
+        # parent indices -1 means no parents
+        parents = np.array([
+            1, 2, 8, 9, 3, 4, 7, 8, 12, 12, 9, 10, 14, -1, 13, -1, -1, 15, 16
+        ])
+        # Left is light and right is dark
+        ecolors = {
+            0: 'light_pink',
+            1: 'light_pink',
+            2: 'light_pink',
+            3: 'pink',
+            4: 'pink',
+            5: 'pink',
+            6: 'light_blue',
+            7: 'light_blue',
+            8: 'light_blue',
+            9: 'blue',
+            10: 'blue',
+            11: 'blue',
+            12: 'purple',
+            17: 'light_green',
+            18: 'light_green',
+            14: 'purple'
+        }
+    elif joints.shape[1] == 19:
+        parents = np.array([
+            1,
+            2,
+            8,
+            9,
+            3,
+            4,
+            7,
+            8,
+            -1,
+            -1,
+            9,
+            10,
+            13,
+            -1,
+        ])
+        ecolors = {
+            0: 'light_pink',
+            1: 'light_pink',
+            2: 'light_pink',
+            3: 'pink',
+            4: 'pink',
+            5: 'pink',
+            6: 'light_blue',
+            7: 'light_blue',
+            10: 'light_blue',
+            11: 'blue',
+            12: 'purple'
+        }
+    else:
+        print('Unknown skeleton!!')
+        import ipdb
+        ipdb.set_trace()
+
     return plt
