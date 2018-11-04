@@ -452,8 +452,8 @@ def draw_text(input_image, content):
         image = image.astype(np.float32) / 255.
     return image
 
-def draw_skeleton_3d(joints, plt, draw_edges = True):
 
+def draw_skeleton_3d(joints, plt, color='b'):
     if joints.shape[1] == 19:
         # parent indices -1 means no parents
         parents = np.array([
@@ -515,34 +515,42 @@ def draw_skeleton_3d(joints, plt, draw_edges = True):
 
     for child in xrange(len(parents)):
         point = joints[:, child]
-        print ("Point shape :" + str(point.shape))
-        # If invisible skip
-        #if vis is not None and vis[child] == 0:
-        #    continue
-
-        #if draw_edges:
-        #    cv2.circle(image, (point[0], point[1]), radius, colors['white'],
-        #               -1)
-        #    cv2.circle(image, (point[0], point[1]), radius - 1,
-        #               colors[jcolors[child]], -1)
-        #else:
-        #    # cv2.circle(image, (point[0], point[1]), 5, colors['white'], 1)
-        #    cv2.circle(image, (point[0], point[1]), radius - 1,
-        #               colors[jcolors[child]], 1)
-        #    # cv2.circle(image, (point[0], point[1]), 5, colors['gray'], -1)
         pa_id = parents[child]
-        if draw_edges and pa_id >= 0:
-            #if vis is not None and vis[pa_id] == 0:
-            #    continue
-            point_pa = joints[:, pa_id]
-            #cv2.circle(image, (point_pa[0], point_pa[1]), radius - 1,
-            #           colors[jcolors[pa_id]], -1)
-            if child not in ecolors.keys():
-                print('bad')
-                import ipdb
-                ipdb.set_trace()
-            #cv2.line(image, (point[0], point[1]), (point_pa[0], point_pa[1]),
-            #         colors[ecolors[child]], radius - 2)
-            plt.plot([point[0][0], point_pa[0][0]], [point[0][1], point_pa[0][1]],
-                    zs=[point[0][2], point_pa[0][2]])
+        point_pa = joints[:, pa_id]
+
+        plt.plot([point[0][0], point_pa[0][0]], [point[0][1], point_pa[0][1]],
+                zs=[point[0][2], point_pa[0][2]], color=color)
+    return plt
+
+from matplotlib.patches import FancyArrowPatch
+from mpl_toolkits.mplot3d import proj3d
+
+class Arrow3D(FancyArrowPatch):
+    def __init__(self, xs, ys, zs, *args, **kwargs):
+        FancyArrowPatch.__init__(self, (0,0), (0,0), *args, **kwargs)
+        self._verts3d = xs, ys, zs
+
+    def draw(self, renderer):
+        xs3d, ys3d, zs3d = self._verts3d
+        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, renderer.M)
+        self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
+        FancyArrowPatch.draw(self, renderer)
+
+
+def draw_displacement(joints_t, joints_q, plt):
+    for idx in xrange(joints_t.shape[1]):
+        point_t = joints_t[:, idx]
+        point_q = joints_q[:, idx]
+
+	a = Arrow3D([point_t[0][0], point_q[0][0]], [point_t[0][1], point_q[0][1]],
+                [point_t[0][2], point_q[0][2]], mutation_scale=10, lw=1, arrowstyle="-|>", color="r")
+        plt.add_artist(a)
+
+    return plt
+
+def draw_arrow(p0, p1, plt):
+    a = Arrow3D([p0[0], p1[0]], [p0[1], p1[1]], [p0[2], p1[2]],
+             mutation_scale=10, lw=1, arrowstyle="-|>", color="r")
+
+    plt.add_artist(a)
     return plt
