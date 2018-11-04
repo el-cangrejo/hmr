@@ -89,8 +89,6 @@ def visualize(img, proc_param, joints, verts, cam):
     plt.axis('off')
     plt.draw()
     plt.show()
-    # import ipdb
-    # ipdb.set_trace()
 
 
 def preprocess_image(img_path, json_path=None):
@@ -139,8 +137,8 @@ def main(t_img_path, q_img_path, json_path=None):
     print("Joints shape 0 :" + str(t_joints3d.shape[0]))
     print("Joints shape 1 :" + str(t_joints3d.shape[1]))
     print("Joints shape 2 :" + str(t_joints3d.shape[2]))
-    visualize_3d(q_img, proc_param, q_joints[0], q_verts[0], q_cams[0], q_joints3d)
-    #visualize(t_img, proc_param, t_joints[0], t_verts[0], t_cams[0])
+    visualize_3d3(q_img, proc_param, q_joints[0], q_verts[0], q_cams[0], q_joints3d,
+            t_img, proc_param, t_joints[0], t_verts[0], t_cams[0], t_joints3d)
 
 
 def visualize_3d(img, proc_param, joints, verts, cam, joints3d):
@@ -154,18 +152,96 @@ def visualize_3d(img, proc_param, joints, verts, cam, joints3d):
 
     # Render results
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    ax = fig.add_subplot(121, projection='3d')
 
     print("Joints shape 3d:" + str(joints3d.shape))
     ax = vis_util.draw_skeleton_3d(joints3d, ax)
     #plt = vis_util.draw_skeleton_3d(img, joints_orig, plt)
-
+    
+    ax1 = fig.add_subplot(122)
+    skel_img = vis_util.draw_skeleton(img, joints_orig)
+    ax1.imshow(skel_img)
     # plt.ion()
     plt.title('diff vp')
     plt.axis('off')
     plt.draw()
     plt.show()
 
+
+def visualize_3d2(img_t, proc_param_t, joints_t, verts_t, cam_t, joints3d_t, 
+        img_q, proc_param_q, joints_q, verts_q, cam_q, joints3d_q):
+    """
+    Renders the result in original image coordinate frame.
+    """
+    import matplotlib.pyplot as plt
+
+    fig = plt.figure()
+
+    ## Pose 1
+    cam_for_render_t, vert_shifted_t, joints_orig_t = vis_util.get_original(
+        proc_param_t, verts_t, cam_t, joints_t, img_size=img_t.shape[:2])
+    # Render results
+    ax_3d_t = fig.add_subplot(221, projection='3d')
+    ax_3d_t = vis_util.draw_skeleton_3d(joints3d_t, ax_3d_t)
+    ax_img_t = fig.add_subplot(222)
+    skel_img_t = vis_util.draw_skeleton(img_t, joints_orig_t)
+    ax_img_t.imshow(skel_img_t)
+
+    ## Pose 2
+    cam_for_render_q, vert_shifted_q, joints_orig_q = vis_util.get_original(
+        proc_param_q, verts_q, cam_q, joints_q, img_size=img_q.shape[:2])
+    # Render results
+    ax_3d_q = fig.add_subplot(223, projection='3d')
+    ax_3d_q = vis_util.draw_skeleton_3d(joints3d_q, ax_3d_q)
+    ax_img_q = fig.add_subplot(224)
+    skel_img_q = vis_util.draw_skeleton(img_q, joints_orig_q)
+    ax_img_q.imshow(skel_img_q)
+
+    plt.draw()
+    plt.show()
+
+def visualize_3d3(img_t, proc_param_t, joints_t, verts_t, cam_t, joints3d_t, 
+        img_q, proc_param_q, joints_q, verts_q, cam_q, joints3d_q):
+    """
+    Renders the result in original image coordinate frame.
+    """
+    import matplotlib.pyplot as plt
+    import matplotlib.gridspec as gridspec
+
+    gs = gridspec.GridSpec(2, 2)
+
+    fig = plt.figure()
+    ax_3d = fig.add_subplot(gs[:, 0], projection='3d')
+
+    cam_for_render_t, vert_shifted_t, joints_orig_t = vis_util.get_original(
+        proc_param_t, verts_t, cam_t, joints_t, img_size=img_t.shape[:2])
+    # Render results
+    ax_3d = vis_util.draw_skeleton_3d(joints3d_t, ax_3d, 'b')
+    ax_3d = vis_util.draw_skeleton_3d(joints3d_q, ax_3d, 'g')
+    ax_3d = vis_util.draw_displacement(joints3d_t, joints3d_q, ax_3d)
+    
+    print ("Cam param :" + str(cam_t))
+    print ("Cam shape :" + str(cam_t.shape))
+    ax_3d = vis_util.draw_arrow(cam_t, [0, 0, 0], ax_3d)
+
+    ## Pose 1
+    cam_for_render_t, vert_shifted_t, joints_orig_t = vis_util.get_original(
+        proc_param_t, verts_t, cam_t, joints_t, img_size=img_t.shape[:2])
+    # Render results
+    ax_img_t = fig.add_subplot(gs[0, 1])
+    skel_img_t = vis_util.draw_skeleton(img_t, joints_orig_t)
+    ax_img_t.imshow(skel_img_t)
+
+    ## Pose 2
+    cam_for_render_q, vert_shifted_q, joints_orig_q = vis_util.get_original(
+        proc_param_q, verts_q, cam_q, joints_q, img_size=img_q.shape[:2])
+    # Render results
+    ax_img_q = fig.add_subplot(gs[1, 1])
+    skel_img_q = vis_util.draw_skeleton(img_q, joints_orig_q)
+    ax_img_q.imshow(skel_img_q)
+
+    plt.draw()
+    plt.show()
 
 if __name__ == '__main__':
     config = flags.FLAGS
